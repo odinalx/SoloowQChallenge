@@ -80,7 +80,7 @@ export default function StatisticsPage() {
             ))}
           </div>
         ) : leaderboards ? (
-          <div className="flex flex-wrap gap-x-10 gap-y-4 border-b border-lol-border/30 pb-6">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-x-10 gap-y-2 border-b border-lol-border/30 pb-6">
             {leaderboards.kda.map((entry, i) => (
               <KDACard key={entry.puuid} entry={entry} rank={i + 1} />
             ))}
