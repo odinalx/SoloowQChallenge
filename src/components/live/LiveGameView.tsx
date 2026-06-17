@@ -231,6 +231,58 @@ export function LiveGameView({ trackedPlayers, demo }: LiveGameViewProps) {
   const soloStreamer = singlePlayer ? trackedPlayers[0] : null
   const modeLabel = liveGame.gameMode === 'CLASSIC' ? 'Partie Classée' : liveGame.gameMode
 
+  // ─── Mobile layout ──────────────────────────────────────────────────────────
+  const MobilePlayerRow = ({ p }: { p: LiveGameParticipant }) => {
+    const href = participantDpm(p)
+    const name = pName(p)
+    return (
+      <div className="flex items-center gap-2.5 px-4 py-1.5">
+        {p.championName
+          ? <img src={ddragon.championIcon(p.championName, version)} alt={p.championName} className="h-7 w-7 flex-shrink-0 rounded-full object-cover border border-lol-border/40" />
+          : <div className="h-7 w-7 flex-shrink-0 rounded-full bg-lol-border" />}
+        {href
+          ? <a href={href} target="_blank" rel="noopener noreferrer" className="text-sm text-lol-gold-light/60 hover:text-lol-gold transition-colors">{name}</a>
+          : <span className="text-sm text-lol-gold-light/30 italic">{name}</span>}
+      </div>
+    )
+  }
+
+  const MobileTrackedCard = ({ tp, p }: { tp: typeof trackedPlayers[0]; p: LiveGameParticipant }) => {
+    const isBlue = p.teamId === 100
+    const { config, soloEntry } = tp
+    const isMaster = soloEntry ? ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(soloEntry.tier) : false
+    const tierName = soloEntry ? (TIER_FR[soloEntry.tier] ?? soloEntry.tier) : null
+    const borderColor = isBlue ? '#0397ab' : '#ef4444'
+    return (
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-lol-border/20 last:border-0">
+        {p.championName
+          ? <img src={ddragon.championIcon(p.championName, version)} alt={p.championName} className="h-16 w-16 flex-shrink-0 rounded-full object-cover" style={{ border: `3px solid ${borderColor}` }} />
+          : <div className="h-16 w-16 flex-shrink-0 rounded-full bg-lol-border" style={{ border: `3px solid ${borderColor}` }} />}
+        <div className="flex flex-col gap-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <a href={configDpm(config)} target="_blank" rel="noopener noreferrer"
+               className="text-xl font-black uppercase italic tracking-tight text-lol-gold-light hover:text-lol-gold transition-colors leading-none">
+              {config.displayName}
+            </a>
+            <TwitchLiveBadge login={config.twitchLogin} forceShow={demo} />
+          </div>
+          {soloEntry && (
+            <div className="flex items-center gap-1.5">
+              <img src={ddragon.rankEmblem(soloEntry.tier)} alt={soloEntry.tier} className="h-5 w-5 object-contain flex-shrink-0" />
+              <span className="text-sm font-semibold text-lol-gold-light/80 whitespace-nowrap">
+                {isMaster ? tierName : `${tierName} ${soloEntry.rank}`}
+                <span className="ml-1 text-xs text-lol-gold-light/40">({soloEntry.leaguePoints} PL)</span>
+              </span>
+            </div>
+          )}
+          <span className={`text-xs font-bold uppercase tracking-wider ${isBlue ? 'text-[#0397ab]' : 'text-[#ef4444]'}`}>
+            {isBlue ? 'Blue Side' : 'Red Side'}
+          </span>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="rounded-lg border border-lol-border bg-lol-card overflow-hidden">
 
@@ -246,8 +298,38 @@ export function LiveGameView({ trackedPlayers, demo }: LiveGameViewProps) {
         </span>
       </div>
 
-      {/* Two columns — no row separators, icons at inner edge */}
-      <div className="flex divide-x divide-lol-border/30">
+      {/* ── Mobile layout: blue list → tracked featured → red list ── */}
+      <div className="md:hidden">
+        {/* Blue team non-tracked */}
+        <div className="pt-2 pb-1">
+          {blueRaw.filter(p => !trackedPuuids.has(p.puuid)).map((p, i) => (
+            <MobilePlayerRow key={i} p={p} />
+          ))}
+          <p className="px-4 pt-1 pb-2 text-[11px] font-bold uppercase tracking-widest text-[#0397ab]">Blue Side</p>
+        </div>
+
+        {/* Tracked players featured */}
+        {trackedPlayers.length > 0 && (
+          <div className="border-t border-b border-lol-border/40 bg-lol-navy/30">
+            {trackedPlayers.map(tp => {
+              const p = liveGame.participants.find(part => part.puuid === tp.account.puuid)
+              if (!p) return null
+              return <MobileTrackedCard key={tp.account.puuid} tp={tp} p={p} />
+            })}
+          </div>
+        )}
+
+        {/* Red team non-tracked */}
+        <div className="pt-1 pb-2">
+          <p className="px-4 pt-2 pb-1 text-[11px] font-bold uppercase tracking-widest text-[#ef4444]">Red Side</p>
+          {redRaw.filter(p => !trackedPuuids.has(p.puuid)).map((p, i) => (
+            <MobilePlayerRow key={i} p={p} />
+          ))}
+        </div>
+      </div>
+
+      {/* ── Desktop layout: two columns ── */}
+      <div className="hidden md:flex divide-x divide-lol-border/30">
 
         {/* Blue column — enemy-only columns use justify-end (anchored to bottom) */}
         <div className={`flex-1 flex flex-col ${blueJustify}`}>
@@ -270,8 +352,8 @@ export function LiveGameView({ trackedPlayers, demo }: LiveGameViewProps) {
         </div>
       </div>
 
-      {/* Side labels */}
-      <div className="flex border-t border-lol-border/40">
+      {/* Side labels (desktop only) */}
+      <div className="hidden md:flex border-t border-lol-border/40">
         <div className="flex-1 py-2 px-4 text-[11px] font-bold uppercase tracking-widest text-[#0397ab]">Blue Side</div>
         <div className="flex-1 py-2 px-4 text-right text-[11px] font-bold uppercase tracking-widest text-[#ef4444]">Red Side</div>
       </div>
