@@ -275,9 +275,6 @@ export function LiveGameView({ trackedPlayers, demo }: LiveGameViewProps) {
               </span>
             </div>
           )}
-          <span className={`text-xs font-bold uppercase tracking-wider ${isBlue ? 'text-[#0397ab]' : 'text-[#ef4444]'}`}>
-            {isBlue ? 'Blue Side' : 'Red Side'}
-          </span>
         </div>
       </div>
     )
@@ -298,33 +295,30 @@ export function LiveGameView({ trackedPlayers, demo }: LiveGameViewProps) {
         </span>
       </div>
 
-      {/* ── Mobile layout: blue list → tracked featured → red list ── */}
-      <div className="md:hidden">
-        {/* Blue team non-tracked */}
+      {/* ── Mobile layout: tracked first → rest → side label ── */}
+      <div className="md:hidden divide-y divide-lol-border/30">
+        {/* Blue section */}
         <div className="pt-2 pb-1">
+          {blueRaw.filter(p => trackedPuuids.has(p.puuid)).map(p => {
+            const tp = blueTrackedMap.get(p.puuid)!
+            return <MobileTrackedCard key={p.puuid} tp={tp} p={p} />
+          })}
           {blueRaw.filter(p => !trackedPuuids.has(p.puuid)).map((p, i) => (
             <MobilePlayerRow key={i} p={p} />
           ))}
-          <p className="px-4 pt-1 pb-2 text-[11px] font-bold uppercase tracking-widest text-[#0397ab]">Blue Side</p>
+          <p className="px-4 pt-2 pb-1 text-[11px] font-bold uppercase tracking-widest text-[#0397ab]">Blue Side</p>
         </div>
 
-        {/* Tracked players featured */}
-        {trackedPlayers.length > 0 && (
-          <div className="border-t border-b border-lol-border/40 bg-lol-navy/30">
-            {trackedPlayers.map(tp => {
-              const p = liveGame.participants.find(part => part.puuid === tp.account.puuid)
-              if (!p) return null
-              return <MobileTrackedCard key={tp.account.puuid} tp={tp} p={p} />
-            })}
-          </div>
-        )}
-
-        {/* Red team non-tracked */}
-        <div className="pt-1 pb-2">
-          <p className="px-4 pt-2 pb-1 text-[11px] font-bold uppercase tracking-widest text-[#ef4444]">Red Side</p>
+        {/* Red section */}
+        <div className="pt-2 pb-1">
+          {redRaw.filter(p => trackedPuuids.has(p.puuid)).map(p => {
+            const tp = redTrackedMap.get(p.puuid)!
+            return <MobileTrackedCard key={p.puuid} tp={tp} p={p} />
+          })}
           {redRaw.filter(p => !trackedPuuids.has(p.puuid)).map((p, i) => (
             <MobilePlayerRow key={i} p={p} />
           ))}
+          <p className="px-4 pt-2 pb-1 text-[11px] font-bold uppercase tracking-widest text-[#ef4444]">Red Side</p>
         </div>
       </div>
 
