@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: oklch(0.09 0.015 255);
+  --color-foreground: oklch(0.92 0.02 80);
+  --color-card: oklch(0.11 0.02 255);
+  --color-card-foreground: oklch(0.92 0.02 80);
+  --color-border: oklch(0.2 0.03 240);
+  --color-muted: oklch(0.15 0.02 255);
+  --color-muted-foreground: oklch(0.55 0.02 80);
+  --color-primary: oklch(0.72 0.08 80);
+  --color-primary-foreground: oklch(0.09 0.015 255);
+  --color-secondary: oklch(0.15 0.02 255);
+  --color-secondary-foreground: oklch(0.92 0.02 80);
+  --color-accent: oklch(0.42 0.09 210);
+  --color-accent-foreground: oklch(0.92 0.02 80);
+  --color-destructive: oklch(0.55 0.2 25);
+  --color-destructive-foreground: oklch(0.92 0.02 80);
+  --color-ring: oklch(0.72 0.08 80);
+  --color-input: oklch(0.2 0.03 240);
+
+  /* LoL custom palette */
+  --color-lol-navy: #0a0e1a;
+  --color-lol-card: #0f172a;
+  --color-lol-border: #1e2d45;
+  --color-lol-gold: #c8aa6e;
+  --color-lol-gold-light: #f0e6d2;
+  --color-lol-gold-dim: #785a28;
+  --color-lol-blue: #0397ab;
+  --color-lol-blue-light: #cdfafa;
+  --color-win: #22c55e;
+  --color-loss: #ef4444;
+
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-lol-navy);
+    color: var(--color-lol-gold-light);
+    font-family: system-ui, sans-serif;
+  }
+}
