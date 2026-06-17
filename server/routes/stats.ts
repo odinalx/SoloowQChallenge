@@ -38,7 +38,7 @@ statsRouter.get('/leaderboards', (_req, res) => {
 
     const matchIds = getPlayerMatchIds(account.puuid, 420)
     const matches = (matchIds.map(id => getMatch(id)).filter(Boolean) as Match[])
-      .filter(m => !m.info.queueId || m.info.queueId === 420)
+      .filter(m => m.info.queueId === 420)
     if (!matches.length) return []
 
     const puuid = account.puuid

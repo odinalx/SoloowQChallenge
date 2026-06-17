@@ -19,8 +19,8 @@ const LP_FILE = process.env.LP_FILE ?? path.resolve(__dirname, '../../lp_history
 
 const delay = (ms: number) => new Promise(r => setTimeout(r, ms))
 
-// Season 2026 (Split 1) started ~January 8, 2026 — only fetch games from this date onward
-const SEASON_2026_START = 1767744000
+// Season 2026 (Split 1) started January 9, 2026 — pre-season ranked games on Jan 7-8 excluded
+const SEASON_2026_START = 1767916800
 
 // ─── Sliding-window rate limiter ──────────────────────────────────────────────
 // Riot personal key: 100 req / 2 min. We cap at 90 to keep a safety buffer.
@@ -62,6 +62,10 @@ async function syncPlayer(player: typeof PLAYERS[number]): Promise<void> {
   const entries = await riotClient.getLeagueEntriesByPuuid(account.puuid)
   saveLeagueEntries(account.puuid, entries)
 
+  const soloEntry = entries.find(e => e.queueType === 'RANKED_SOLO_5x5')
+  // Official ranked game count — never fetch more IDs than this to prevent pre-season bleed
+  const seasonTotal = soloEntry ? soloEntry.wins + soloEntry.losses : null
+
   const knownIds = new Set(getPlayerMatchIds(account.puuid, 420))
 
   if (knownIds.size === 0 || knownIds.size % 100 === 0) {
@@ -70,6 +74,8 @@ async function syncPlayer(player: typeof PLAYERS[number]): Promise<void> {
     let start = knownIds.size === 0 ? 0 : knownIds.size
     let fetched = 0
     while (true) {
+      // Stop once we have the full season worth of games
+      if (seasonTotal !== null && knownIds.size + fetched >= seasonTotal) break
       await rl.wait()
       const page = await riotClient.getMatchIds(account.puuid, 100, 420, start, SEASON_2026_START)
       const newIds = page.filter(id => !knownIds.has(id))
