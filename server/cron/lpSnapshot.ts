@@ -19,8 +19,8 @@ const LP_FILE = process.env.LP_FILE ?? path.resolve(__dirname, '../../lp_history
 
 const delay = (ms: number) => new Promise(r => setTimeout(r, ms))
 
-// Season 2026 (Split 1) started January 9, 2026 — pre-season ranked games on Jan 7-8 excluded
-const SEASON_2026_START = 1767916800
+// Season 2026 (Split 1) started January 8, 2026
+const SEASON_2026_START = 1767830400
 
 // ─── Sliding-window rate limiter ──────────────────────────────────────────────
 // Riot personal key: 100 req / 2 min. We cap at 90 to keep a safety buffer.
