@@ -119,6 +119,102 @@ function RankInline({ tier, rank, lp }: { tier: string; rank: string; lp: number
   )
 }
 
+// ─── Mobile card ─────────────────────────────────────────────────────────────
+
+function PlayerMobileCard({ player, rank }: { player: TrackedPlayer; rank: number }) {
+  const version = useDDragonVersion()
+  const { account, soloEntry, recentMatches, config } = player
+
+  const total = soloEntry ? soloEntry.wins + soloEntry.losses : 0
+  const wr = soloEntry ? winRate(soloEntry.wins, soloEntry.losses) : '—'
+  const isMaster = soloEntry ? ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(soloEntry.tier) : false
+  const tierName = soloEntry ? (TIER_FR[soloEntry.tier] ?? soloEntry.tier) : null
+
+  const streak = recentMatches.slice(0, 9)
+    .map(m => {
+      const p = m.info.participants.find(x => x.puuid === account.puuid)
+      return p ? { win: p.win, champion: p.championName } : null
+    })
+    .filter(Boolean)
+    .reverse() as { win: boolean; champion: string }[]
+
+  const roleCounts = recentMatches.reduce((acc, m) => {
+    const pos = m.info.participants.find(x => x.puuid === account.puuid)?.teamPosition
+    if (pos) acc[pos] = (acc[pos] ?? 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+  const sortedRoles = Object.entries(roleCounts).sort((a, b) => b[1] - a[1])
+  const mostPlayedRole = sortedRoles[0]?.[0] ?? null
+  const secondRole = sortedRoles[1]?.[0] ?? null
+
+  const wrNum = soloEntry ? Math.round((soloEntry.wins / Math.max(1, total)) * 100) : null
+  const wrColor = wrNum === null ? 'text-lol-gold-light/50'
+    : wrNum >= 60 ? 'text-win' : wrNum < 50 ? 'text-loss' : 'text-lol-gold-light'
+
+  return (
+    <div className="rounded-lg border border-lol-border bg-lol-card p-3">
+      {/* Row 1: rank + avatar + name + twitch */}
+      <div className="flex items-center gap-2 mb-3">
+        <span className="w-4 flex-shrink-0 text-sm font-bold text-lol-gold-light/30">{rank}</span>
+        <PlayerAvatar player={player} version={version} />
+        <span className="flex-1 font-semibold text-lol-gold-light">{config.displayName}</span>
+        {config.twitchLogin && <TwitchBadge login={config.twitchLogin} />}
+      </div>
+
+      {/* Row 2: role + rank + W/L + WR */}
+      <div className="flex items-center gap-2 mb-2.5">
+        <div className="flex items-end gap-0.5 flex-shrink-0">
+          <RoleIcon position={mostPlayedRole} />
+          {secondRole && (
+            <>
+              <span className="text-[10px] text-lol-gold-light/30 leading-none">/</span>
+              <img src={ROLE_URL[secondRole]} alt={secondRole} className="h-3.5 w-3.5 object-contain opacity-40" />
+            </>
+          )}
+          {!secondRole && <div className="h-3.5 w-3.5" />}
+        </div>
+        {soloEntry ? (
+          <div className="flex items-center gap-1 flex-1 min-w-0">
+            <img src={ddragon.rankEmblem(soloEntry.tier)} alt={soloEntry.tier} className="h-6 w-6 flex-shrink-0 object-contain" />
+            <span className="text-sm font-semibold text-lol-gold truncate">
+              {tierName}{!isMaster && ` ${soloEntry.rank}`}
+              <span className="ml-1 text-xs font-normal text-lol-gold-light/50">{soloEntry.leaguePoints} PL</span>
+            </span>
+          </div>
+        ) : (
+          <span className="flex-1 text-sm text-lol-gold-light/30">Non classé</span>
+        )}
+        <div className="flex items-center gap-1.5 flex-shrink-0 font-mono text-xs">
+          <span className="text-win">{soloEntry?.wins ?? '—'}</span>
+          <span className="text-lol-gold-light/20">/</span>
+          <span className="text-loss">{soloEntry?.losses ?? '—'}</span>
+          <span className={`ml-1 font-semibold ${wrColor}`}>{wr}</span>
+        </div>
+      </div>
+
+      {/* Row 3: DPM link */}
+      <div className="mb-2.5">
+        <a
+          href={`https://dpm.lol/${encodeURIComponent(account.gameName)}-${encodeURIComponent(account.tagLine)}`}
+          target="_blank" rel="noopener noreferrer"
+          className="font-mono text-xs text-lol-gold-light/40 hover:text-lol-gold transition-colors"
+        >
+          {account.gameName}<span className="text-lol-gold-light/20">#{account.tagLine}</span>
+        </a>
+      </div>
+
+      {/* Row 4: streak */}
+      {streak.length > 0 && (
+        <div className="flex gap-1 flex-wrap">
+          {streak.map((s, i) => (
+            <StreakSquare key={i} win={s.win} champion={s.champion} version={version} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Sort key helpers ─────────────────────────────────────────────────────────
 
 type SortKey = 'name' | 'elo' | 'matches' | 'wins' | 'losses' | 'wr'
@@ -320,35 +416,47 @@ export function PlayerTable({ players, loading }: PlayerTableProps) {
   const thProps = { activeKey: sortKey, dir: sortDir, onSort: handleSort }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[960px] border-collapse">
-        <thead>
-          <tr>
-            <TH {...thProps} first>
-              #
-            </TH>
-            <TH {...thProps}>PLAYER</TH>
-            <TH {...thProps}>TWITCH</TH>
-            <TH {...thProps}>COMPTE / STATS</TH>
-            <TH {...thProps} center>RÔLE</TH>
-            <TH {...thProps} sortKey="elo">ELO</TH>
-            <TH {...thProps} sortKey="matches" center>M</TH>
-            <TH {...thProps} sortKey="wins" center>V</TH>
-            <TH {...thProps} sortKey="losses" center>D</TH>
-            <TH {...thProps} sortKey="wr" center>WR</TH>
-            <TH {...thProps}>STREAK</TH>
-          </tr>
-        </thead>
-        <tbody>
-          {sorted.map((player, i) => (
-            <PlayerRow
-              key={`${player.account.gameName}#${player.account.tagLine}`}
-              player={player}
-              rank={i + 1}
-            />
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      {/* Mobile cards */}
+      <div className="md:hidden space-y-3">
+        {sorted.map((player, i) => (
+          <PlayerMobileCard
+            key={`${player.account.gameName}#${player.account.tagLine}`}
+            player={player}
+            rank={i + 1}
+          />
+        ))}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full min-w-[960px] border-collapse">
+          <thead>
+            <tr>
+              <TH {...thProps} first>#</TH>
+              <TH {...thProps}>PLAYER</TH>
+              <TH {...thProps}>TWITCH</TH>
+              <TH {...thProps}>COMPTE / STATS</TH>
+              <TH {...thProps} center>RÔLE</TH>
+              <TH {...thProps} sortKey="elo">ELO</TH>
+              <TH {...thProps} sortKey="matches" center>M</TH>
+              <TH {...thProps} sortKey="wins" center>V</TH>
+              <TH {...thProps} sortKey="losses" center>D</TH>
+              <TH {...thProps} sortKey="wr" center>WR</TH>
+              <TH {...thProps}>STREAK</TH>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((player, i) => (
+              <PlayerRow
+                key={`${player.account.gameName}#${player.account.tagLine}`}
+                player={player}
+                rank={i + 1}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   )
 }
