@@ -52,14 +52,14 @@ function PlayerStatsPanel({ player, rank }: { player: TrackedPlayer; rank: numbe
   const tierName = soloEntry ? (TIER_FR[soloEntry.tier] ?? soloEntry.tier) : null
 
   return (
-    <div className="flex flex-col justify-center gap-4 px-6 py-2 h-full">
+    <div className="flex flex-col justify-center gap-4 px-4 md:px-6 py-4 md:py-2 md:h-full">
 
       {/* Name + rank number inline */}
       <div className="flex items-baseline gap-2">
-        <h2 className="text-4xl font-black uppercase tracking-tight text-lol-gold-light leading-none">
+        <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-lol-gold-light leading-none">
           {config.displayName}
         </h2>
-        <span className="text-2xl font-bold text-lol-gold-light/30 leading-none">
+        <span className="text-xl md:text-2xl font-bold text-lol-gold-light/30 leading-none">
           #{rank}
         </span>
       </div>
@@ -70,7 +70,7 @@ function PlayerStatsPanel({ player, rank }: { player: TrackedPlayer; rank: numbe
           <img
             src={ddragon.rankEmblem(soloEntry.tier)}
             alt={soloEntry.tier}
-            className="h-20 w-20 flex-shrink-0 object-contain"
+            className="h-16 w-16 md:h-20 md:w-20 flex-shrink-0 object-contain"
           />
           <div>
             <p className="text-lg font-medium text-lol-gold leading-tight">
@@ -83,7 +83,7 @@ function PlayerStatsPanel({ player, rank }: { player: TrackedPlayer; rank: numbe
         <p className="text-sm text-lol-gold-light/30">Non classé</p>
       )}
 
-      {/* Stats + streak share same width (streak sets the natural width) */}
+      {/* Stats + streak */}
       <div className="w-fit">
         {soloEntry && (
           <>
@@ -106,7 +106,7 @@ function PlayerStatsPanel({ player, rank }: { player: TrackedPlayer; rank: numbe
         )}
 
         {streak.length > 0 && (
-          <div className="flex gap-1">
+          <div className="flex gap-1 flex-wrap">
             {streak.map((s, i) => (
               <StreakSquare key={i} win={s.win} champion={s.champion} version={version} />
             ))}
@@ -114,6 +114,9 @@ function PlayerStatsPanel({ player, rank }: { player: TrackedPlayer; rank: numbe
         )}
       </div>
 
+      {isInGame && liveGame && (
+        <LiveTimer startTime={liveGame.gameStartTime} gameLength={liveGame.gameLength} />
+      )}
     </div>
   )
 }
@@ -128,9 +131,9 @@ export function LiveStreamPanel({ login, player, rank }: LiveStreamPanelProps) {
   const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
 
   return (
-    <div className="flex gap-0">
-      {/* Stream — 65% */}
-      <div className="w-[65%] flex-shrink-0">
+    <div className="flex flex-col md:flex-row gap-0">
+      {/* Stream — full width on mobile, 65% on desktop */}
+      <div className="w-full md:w-[65%] flex-shrink-0">
         <div className="aspect-video w-full">
           <iframe
             src={`https://player.twitch.tv/?channel=${login}&parent=${hostname}&autoplay=false`}
@@ -141,12 +144,12 @@ export function LiveStreamPanel({ login, player, rank }: LiveStreamPanelProps) {
         </div>
       </div>
 
-      {/* Stats — 35%, no border, no background */}
-      <div className="flex-1">
+      {/* Stats — full width on mobile, 35% on desktop */}
+      <div className="w-full md:flex-1 border-t border-lol-border/30 md:border-t-0">
         {player
           ? <PlayerStatsPanel player={player} rank={rank} />
           : (
-            <div className="flex h-full items-center px-6">
+            <div className="flex h-full items-center px-4 md:px-6 py-4">
               <p className="text-sm text-lol-gold-light/30">{login}</p>
             </div>
           )}
