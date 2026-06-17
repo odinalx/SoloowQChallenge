@@ -264,7 +264,7 @@ export function LiveGameView({ trackedPlayers, demo }: LiveGameViewProps) {
                className="text-xl font-black uppercase italic tracking-tight text-lol-gold-light hover:text-lol-gold transition-colors leading-none">
               {config.displayName}
             </a>
-            <TwitchLiveBadge login={config.twitchLogin} forceShow={demo} />
+            {!singlePlayer && <TwitchLiveBadge login={config.twitchLogin} forceShow={demo} />}
           </div>
           {soloEntry && (
             <div className="flex items-center gap-1.5">
