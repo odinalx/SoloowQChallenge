@@ -41,6 +41,7 @@ db.exec(`
     queue_id INTEGER NOT NULL DEFAULT 420,
     PRIMARY KEY (puuid, match_id)
   );
+  CREATE INDEX IF NOT EXISTS idx_player_match_ids_puuid ON player_match_ids(puuid, queue_id);
 `)
 
 // ─── Accounts ────────────────────────────────────────────────────────────────

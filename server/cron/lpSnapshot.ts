@@ -74,30 +74,32 @@ async function syncPlayer(player: typeof PLAYERS[number]): Promise<void> {
     let start = knownIds.size === 0 ? 0 : knownIds.size
     let fetched = 0
     while (true) {
-      // Stop once we have the full season worth of games
-      if (seasonTotal !== null && knownIds.size + fetched >= seasonTotal) break
       await rl.wait()
       const page = await riotClient.getMatchIds(account.puuid, 100, 420, start, SEASON_2026_START)
-      const newIds = page.filter(id => !knownIds.has(id))
-      if (newIds.length) { savePlayerMatchIds(account.puuid, newIds, 420); fetched += newIds.length }
+      let newIds = page.filter(id => !knownIds.has(id))
+      // Truncate to exactly seasonTotal to avoid saving remakes (which appear in
+      // match history but don't count toward wins+losses)
+      if (seasonTotal !== null) {
+        const remaining = seasonTotal - knownIds.size - fetched
+        newIds = newIds.slice(0, Math.max(0, remaining))
+      }
+      if (newIds.length) {
+        savePlayerMatchIds(account.puuid, newIds, 420)
+        for (const id of newIds) knownIds.add(id)
+        fetched += newIds.length
+      }
+      if (seasonTotal !== null && knownIds.size >= seasonTotal) break
       if (page.length < 100) break
       start += 100
     }
-    if (fetched) console.log(`[Cron] ${player.displayName}: +${fetched} matchs indexés (total ${knownIds.size + fetched})`)
-
-    // Also check for brand-new games at the top (played since last sync)
-    await rl.wait()
-    const latest = await riotClient.getMatchIds(account.puuid, 100, 420, 0, SEASON_2026_START)
-    const newTop = latest.filter(id => !knownIds.has(id))
-    if (newTop.length) savePlayerMatchIds(account.puuid, newTop, 420)
-  } else {
-    // Total is not a multiple of 100 → we already have all historical games.
-    // Just check for new ones at the top.
-    await rl.wait()
-    const latest = await riotClient.getMatchIds(account.puuid, 100, 420, 0, SEASON_2026_START)
-    const newIds = latest.filter(id => !knownIds.has(id))
-    if (newIds.length) savePlayerMatchIds(account.puuid, newIds, 420)
+    if (fetched) console.log(`[Cron] ${player.displayName}: +${fetched} matchs indexés (total ${knownIds.size})`)
   }
+
+  // Check for new games played since last sync (runs every cycle)
+  await rl.wait()
+  const latest = await riotClient.getMatchIds(account.puuid, 100, 420, 0, SEASON_2026_START)
+  const newTop = latest.filter(id => !knownIds.has(id))
+  if (newTop.length) savePlayerMatchIds(account.puuid, newTop, 420)
 }
 
 // ─── Match sync — batched concurrent fetching, interleaved across players ─────

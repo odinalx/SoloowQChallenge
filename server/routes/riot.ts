@@ -22,8 +22,13 @@ function buildFromDB(config: typeof PLAYERS[number]): TrackedPlayer | null {
   const entries = getLeagueEntries(account.puuid)
   const soloEntry = entries.find(e => e.queueType === 'RANKED_SOLO_5x5') ?? null
 
-  const matchIds = getPlayerMatchIds(account.puuid, 420).slice(0, 12)
-  const recentMatches = matchIds.map(id => getMatch(id)).filter(Boolean) as Match[]
+  const allMatchIds = getPlayerMatchIds(account.puuid, 420)
+  const recentMatches: Match[] = []
+  for (const id of allMatchIds) {
+    if (recentMatches.length >= 9) break
+    const m = getMatch(id)
+    if (m && m.info.gameDuration >= 210) recentMatches.push(m)
+  }
 
   return { config, account, summoner, soloEntry, recentMatches, isInGame: false }
 }
