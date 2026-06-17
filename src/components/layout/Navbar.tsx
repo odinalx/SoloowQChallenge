@@ -1,14 +1,14 @@
-import { NavLink } from 'react-router-dom'
-import { Swords, Radio, BarChart2, Menu, X } from 'lucide-react'
 import { useState } from 'react'
+import { NavLink } from 'react-router-dom'
+import { Swords, Radio, BarChart2, Menu, X, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const leftLinks = [
+const leftLinks: { to: string; label: string; icon: LucideIcon; end?: boolean }[] = [
   { to: '/', label: 'Classement', icon: Swords, end: true },
   { to: '/en-direct', label: 'En Direct', icon: Radio },
 ]
 
-const rightLinks = [
+const rightLinks: { to: string; label: string; icon: LucideIcon; end?: boolean }[] = [
   { to: '/statistiques', label: 'Statistiques', icon: BarChart2 },
 ]
 

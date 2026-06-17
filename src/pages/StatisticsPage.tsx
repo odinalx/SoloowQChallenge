@@ -92,13 +92,13 @@ export default function StatisticsPage() {
       <section>
         <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-lol-gold-light/40">Le Top</p>
         {loading ? (
-          <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-48 w-full bg-lol-border/30 rounded" />
             ))}
           </div>
         ) : leaderboards ? (
-          <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <StatLeaderboard title="Kills" entries={leaderboards.kills} version={version} />
             <StatLeaderboard title="Deaths" entries={leaderboards.deaths} version={version} />
             <StatLeaderboard title="Assists" entries={leaderboards.assists} version={version} />
