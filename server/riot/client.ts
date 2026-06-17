@@ -62,7 +62,8 @@ export const riotClient = {
         gameId: number; queueId: number; gameCreation: number; gameDuration: number; gameMode: string;
         participants: Array<{
           puuid: string; summonerName: string; riotIdGameName?: string;
-          championName: string; kills: number; deaths: number; assists: number;
+          championName: string; teamPosition?: string;
+          kills: number; deaths: number; assists: number;
           totalMinionsKilled: number; neutralMinionsKilled: number;
           win: boolean; teamId: number
         }>

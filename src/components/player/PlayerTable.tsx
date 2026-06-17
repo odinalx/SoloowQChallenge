@@ -80,6 +80,21 @@ function PlayerAvatar({ player, version }: { player: TrackedPlayer; version: str
   )
 }
 
+// ─── Role icon ───────────────────────────────────────────────────────────────
+
+const ROLE_URL: Record<string, string> = {
+  TOP:     'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-top.png',
+  JUNGLE:  'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-jungle.png',
+  MIDDLE:  'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-middle.png',
+  BOTTOM:  'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-bottom.png',
+  UTILITY: 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-utility.png',
+}
+
+function RoleIcon({ position }: { position: string | null }) {
+  if (!position || !ROLE_URL[position]) return <span className="text-xs text-lol-gold-light/20">—</span>
+  return <img src={ROLE_URL[position]} alt={position} title={position} className="h-6 w-6 object-contain opacity-80" />
+}
+
 // ─── Rank inline (icon + text on one line) ───────────────────────────────────
 
 function RankInline({ tier, rank, lp }: { tier: string; rank: string; lp: number }) {
@@ -175,6 +190,16 @@ function PlayerRow({ player, rank }: { player: TrackedPlayer; rank: number }) {
     .filter(Boolean)
     .reverse() as { win: boolean; champion: string }[]
 
+  // Most played role from recent matches
+  const roleCounts = recentMatches.reduce((acc, m) => {
+    const pos = m.info.participants.find(x => x.puuid === account.puuid)?.teamPosition
+    if (pos) acc[pos] = (acc[pos] ?? 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+  const sortedRoles = Object.entries(roleCounts).sort((a, b) => b[1] - a[1])
+  const mostPlayedRole = sortedRoles[0]?.[0] ?? null
+  const secondRole = sortedRoles[1]?.[0] ?? null
+
   const wrNum = soloEntry ? Math.round((soloEntry.wins / Math.max(1, total)) * 100) : null
   const wrColor = wrNum === null ? 'text-lol-gold-light/50'
     : wrNum >= 60 ? 'text-win'
@@ -208,6 +233,16 @@ function PlayerRow({ player, rank }: { player: TrackedPlayer; rank: number }) {
           {account.gameName}
           <span className="text-lol-gold-light/25 group-hover:text-lol-gold/40">#{account.tagLine}</span>
         </a>
+      </td>
+
+      <td className="py-5 px-3 text-center">
+        <div className="inline-flex items-end gap-1">
+          <RoleIcon position={mostPlayedRole} />
+          <span className={`text-[10px] leading-none ${secondRole ? 'text-lol-gold-light/30' : 'invisible'}`}>/</span>
+          {secondRole
+            ? <img src={ROLE_URL[secondRole]} alt={secondRole} title={secondRole} className="h-3.5 w-3.5 object-contain opacity-40" />
+            : <div className="h-3.5 w-3.5" />}
+        </div>
       </td>
 
       <td className="py-5 px-3">
@@ -295,6 +330,7 @@ export function PlayerTable({ players, loading }: PlayerTableProps) {
             <TH {...thProps}>PLAYER</TH>
             <TH {...thProps}>TWITCH</TH>
             <TH {...thProps}>COMPTE / STATS</TH>
+            <TH {...thProps} center>RÔLE</TH>
             <TH {...thProps} sortKey="elo">ELO</TH>
             <TH {...thProps} sortKey="matches" center>M</TH>
             <TH {...thProps} sortKey="wins" center>V</TH>

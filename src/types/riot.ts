@@ -51,6 +51,7 @@ export interface MatchParticipant {
   summonerName: string
   riotIdGameName?: string
   championName: string
+  teamPosition?: string
   kills: number
   deaths: number
   assists: number
