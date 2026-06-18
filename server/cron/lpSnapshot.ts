@@ -62,33 +62,23 @@ async function syncPlayer(player: typeof PLAYERS[number]): Promise<void> {
   const entries = await riotClient.getLeagueEntriesByPuuid(account.puuid)
   saveLeagueEntries(account.puuid, entries)
 
-  const soloEntry = entries.find(e => e.queueType === 'RANKED_SOLO_5x5')
-  // Official ranked game count — never fetch more IDs than this to prevent pre-season bleed
-  const seasonTotal = soloEntry ? soloEntry.wins + soloEntry.losses : null
-
   const knownIds = new Set(getPlayerMatchIds(account.puuid, 420))
 
   if (knownIds.size === 0 || knownIds.size % 100 === 0) {
-    // Either cold start OR previously capped at exactly N×100 pages.
-    // Paginate from the current count forward to fetch all remaining games.
+    // Cold start or last sync landed exactly on a page boundary — paginate forward.
+    // Remakes are stored but filtered at read-time (gameDuration < 210s), so we
+    // never cap by wins+losses here.
     let start = knownIds.size === 0 ? 0 : knownIds.size
     let fetched = 0
     while (true) {
       await rl.wait()
       const page = await riotClient.getMatchIds(account.puuid, 100, 420, start, SEASON_2026_START)
-      let newIds = page.filter(id => !knownIds.has(id))
-      // Truncate to exactly seasonTotal to avoid saving remakes (which appear in
-      // match history but don't count toward wins+losses)
-      if (seasonTotal !== null) {
-        const remaining = seasonTotal - knownIds.size - fetched
-        newIds = newIds.slice(0, Math.max(0, remaining))
-      }
+      const newIds = page.filter(id => !knownIds.has(id))
       if (newIds.length) {
         savePlayerMatchIds(account.puuid, newIds, 420)
         for (const id of newIds) knownIds.add(id)
         fetched += newIds.length
       }
-      if (seasonTotal !== null && knownIds.size >= seasonTotal) break
       if (page.length < 100) break
       start += 100
     }
