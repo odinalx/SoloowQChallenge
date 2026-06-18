@@ -1,7 +1,7 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts && npm approve-scripts better-sqlite3 && npm rebuild better-sqlite3
+RUN npm ci --ignore-scripts && npm rebuild better-sqlite3
 
 FROM node:22-alpine AS builder
 WORKDIR /app
