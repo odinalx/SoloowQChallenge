@@ -3,7 +3,7 @@ import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useTwitchStatus } from '@/hooks/useTwitchStatus'
 import { useDDragonVersion } from '@/hooks/useDDragon'
-import { ddragon, winRate } from '@/lib/utils'
+import { cn, ddragon, winRate } from '@/lib/utils'
 import { TIER_FR, computeAbsoluteLP } from '@/constants/ranks'
 import type { TrackedPlayer } from '@/types/riot'
 
@@ -16,8 +16,8 @@ function TwitchBadge({ login }: { login: string }) {
       href={`https://www.twitch.tv/${login}`}
       target="_blank"
       rel="noopener noreferrer"
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold transition-opacity hover:opacity-80 ${
-        isLive ? 'bg-red-600 text-white' : 'bg-neutral-800 text-neutral-500'
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold transition-all duration-200 hover:opacity-80 ${
+        isLive ? 'bg-red-600 text-white glow-live' : 'bg-neutral-800 text-neutral-500'
       }`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${isLive ? 'bg-white animate-pulse' : 'bg-neutral-600'}`} />
@@ -64,14 +64,18 @@ function PlayerAvatar({ player, version }: { player: TrackedPlayer; version: str
     setLastLogin(twitchLogin)
     setSrc(twitchLogin ? `https://unavatar.io/twitch/${twitchLogin}` : fallbackSrc)
   }
+  const color = player.config.color ?? '#c8aa6e'
   return (
     <div className="relative flex-shrink-0">
       <img
         src={src}
         alt={player.config.displayName}
         onError={() => setSrc(fallbackSrc)}
-        className="h-10 w-10 rounded-full border-2 object-cover"
-        style={{ borderColor: player.config.color ?? '#c8aa6e' }}
+        className="h-10 w-10 rounded-full border-2 object-cover transition-all duration-300"
+        style={{
+          borderColor: color,
+          boxShadow: `0 0 8px ${color}55, 0 0 20px ${color}22`,
+        }}
       />
       {player.isInGame && (
         <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border border-lol-navy bg-loss" />
@@ -152,10 +156,16 @@ function PlayerMobileCard({ player, rank }: { player: TrackedPlayer; rank: numbe
     : wrNum >= 60 ? 'text-win' : wrNum < 50 ? 'text-loss' : 'text-lol-gold-light'
 
   return (
-    <div className="rounded-lg border border-lol-border bg-lol-card p-3">
+    <div className={cn(
+      'rounded-lg border p-3 transition-colors',
+      rank === 1 ? 'border-lol-gold/30 bg-lol-card' : 'border-lol-border bg-lol-card'
+    )}>
       {/* Row 1: rank + avatar + name + twitch */}
       <div className="flex items-center gap-2 mb-3">
-        <span className="w-4 flex-shrink-0 text-sm font-bold text-lol-gold-light/30">{rank}</span>
+        <span className={cn(
+          'w-4 flex-shrink-0 text-sm font-black',
+          rank === 1 ? 'text-lol-gold glow-gold' : 'text-lol-gold-light/30'
+        )}>{rank}</span>
         <PlayerAvatar player={player} version={version} />
         <span className="flex-1 font-semibold text-lol-gold-light">{config.displayName}</span>
         {config.twitchLogin && <TwitchBadge login={config.twitchLogin} />}
@@ -303,8 +313,14 @@ function PlayerRow({ player, rank }: { player: TrackedPlayer; rank: number }) {
     : 'text-lol-gold-light'
 
   return (
-    <tr className="border-b border-white/[0.06] transition-colors hover:bg-white/[0.03]">
-      <td className="py-5 pl-3 pr-2 text-center text-sm font-bold text-lol-gold-light/30">{rank}</td>
+    <tr className={cn(
+      'border-b border-white/[0.06] transition-colors',
+      rank === 1 ? 'bg-lol-gold/[0.03] hover:bg-lol-gold/[0.06]' : 'hover:bg-white/[0.03]'
+    )}>
+      <td className={cn(
+        'py-5 pl-3 pr-2 text-center text-sm font-black',
+        rank === 1 ? 'text-lol-gold glow-gold' : 'text-lol-gold-light/25'
+      )}>{rank}</td>
 
       <td className="py-5 px-3">
         <div className="flex items-center gap-3">

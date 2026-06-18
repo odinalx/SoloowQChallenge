@@ -131,7 +131,10 @@ export function LiveStreamPanel({ login, player, rank }: LiveStreamPanelProps) {
   const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
 
   return (
-    <div className="flex flex-col md:flex-row gap-0">
+    <div
+      className="flex flex-col md:flex-row gap-0 rounded-xl overflow-hidden border border-lol-border/60"
+      style={{ boxShadow: '0 0 48px -8px rgba(200, 170, 110, 0.1), 0 0 100px -20px rgba(200, 170, 110, 0.06)' }}
+    >
       {/* Stream — full width on mobile, 65% on desktop */}
       <div className="w-full md:w-[65%] flex-shrink-0">
         <div className="aspect-video w-full">
@@ -145,7 +148,7 @@ export function LiveStreamPanel({ login, player, rank }: LiveStreamPanelProps) {
       </div>
 
       {/* Stats — full width on mobile, 35% on desktop */}
-      <div className="w-full md:flex-1 border-t border-lol-border/30 md:border-t-0">
+      <div className="w-full md:flex-1 border-t border-lol-border/30 md:border-t-0 md:border-l md:border-lol-border/30">
         {player
           ? <PlayerStatsPanel player={player} rank={rank} />
           : (
