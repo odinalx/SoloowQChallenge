@@ -9,7 +9,16 @@ export default function Layout() {
         <Outlet />
       </main>
       <footer className="border-t border-lol-border py-4 text-center text-xs text-lol-gold-light/40">
-        SolowQ Challenge — Données fournies par Riot Games API
+        SolowQ Challenge by{' '}
+        <a
+          href="https://github.com/odinalx"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-lol-gold-light/60 hover:text-lol-gold transition-colors"
+        >
+          odinalx
+        </a>
+        {' '}— Données fournies par Riot Games API
       </footer>
     </div>
   )
