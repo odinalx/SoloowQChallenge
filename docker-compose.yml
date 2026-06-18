@@ -1,10 +1,23 @@
 services:
   app:
     build: .
+    container_name: solowq
     restart: unless-stopped
-    ports:
-      - "3001:3001"
     env_file:
       - .env
     volumes:
       - ./data:/data
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.solowq.rule=Host(`solowq.odinalx.dev`)"
+      - "traefik.http.routers.solowq.entrypoints=https"
+      - "traefik.http.routers.solowq.tls=true"
+      - "traefik.http.routers.solowq.tls.certresolver=letsencrypt"
+      - "traefik.http.services.solowq.loadbalancer.server.port=3001"
+      - "traefik.docker.network=proxy"
+
+networks:
+  proxy:
+    external: true
