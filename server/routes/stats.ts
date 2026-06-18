@@ -23,8 +23,16 @@ statsRouter.get('/lp-history', async (_req, res) => {
 statsRouter.get('/leaderboards', (_req, res) => {
   type PlayerStats = {
     puuid: string; displayName: string; twitchLogin?: string; profileIconId?: number;
-    kda: number; kills: number; deaths: number; assists: number; csPerMin: number; games: number
+    kda: number; kills: number; deaths: number; assists: number; csPerMin: number;
+    avgKills: number; avgDeaths: number; avgAssists: number; avgPings: number;
+    games: number
   }
+
+  const PING_FIELDS = [
+    'allInPings', 'assistMePings', 'basicPings', 'commandPings', 'dangerPings',
+    'enemyMissingPings', 'enemyVisionPings', 'getBackPings', 'holdPings',
+    'needVisionPings', 'onMyWayPings', 'pushPings', 'retreatPings', 'visionClearedPings',
+  ] as const
 
   const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length
   const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0)
@@ -45,8 +53,10 @@ statsRouter.get('/leaderboards', (_req, res) => {
     const stats = matches.flatMap(m => {
       const p = m.info.participants.find(x => x.puuid === puuid)
       if (!p) return []
+      const raw = p as unknown as Record<string, number>
       const csPerMin = (p.totalMinionsKilled + p.neutralMinionsKilled) / Math.max(1, m.info.gameDuration / 60)
-      return [{ kills: p.kills, deaths: p.deaths, assists: p.assists, csPerMin, kda: (p.kills + p.assists) / Math.max(1, p.deaths) }]
+      const totalPings = PING_FIELDS.reduce((acc, k) => acc + (raw[k] ?? 0), 0)
+      return [{ kills: p.kills, deaths: p.deaths, assists: p.assists, csPerMin, kda: (p.kills + p.assists) / Math.max(1, p.deaths), totalPings }]
     })
 
     if (!stats.length) return []
@@ -61,6 +71,10 @@ statsRouter.get('/leaderboards', (_req, res) => {
       deaths: sum(stats.map(s => s.deaths)),
       assists: sum(stats.map(s => s.assists)),
       csPerMin: avg(stats.map(s => s.csPerMin)),
+      avgKills: avg(stats.map(s => s.kills)),
+      avgDeaths: avg(stats.map(s => s.deaths)),
+      avgAssists: avg(stats.map(s => s.assists)),
+      avgPings: avg(stats.map(s => s.totalPings)),
       games: stats.length,
     }]
   })
@@ -76,10 +90,14 @@ statsRouter.get('/leaderboards', (_req, res) => {
 
   const leaderboards: LeaderboardStats = {
     kda:     [...data].sort((a, b) => b.kda - a.kda).map(d => makeEntry(d, d.kda.toFixed(2))),
-    kills:   [...data].sort((a, b) => b.kills - a.kills).map(d => makeEntry(d, String(d.kills))),
-    deaths:  [...data].sort((a, b) => b.deaths - a.deaths).map(d => makeEntry(d, String(d.deaths))),
-    assists: [...data].sort((a, b) => b.assists - a.assists).map(d => makeEntry(d, String(d.assists))),
-    csPerMin:[...data].sort((a, b) => b.csPerMin - a.csPerMin).map(d => makeEntry(d, d.csPerMin.toFixed(1))),
+    kills:    [...data].sort((a, b) => b.kills - a.kills).map(d => makeEntry(d, String(d.kills))),
+    deaths:   [...data].sort((a, b) => b.deaths - a.deaths).map(d => makeEntry(d, String(d.deaths))),
+    assists:  [...data].sort((a, b) => b.assists - a.assists).map(d => makeEntry(d, String(d.assists))),
+    csPerMin: [...data].sort((a, b) => b.csPerMin - a.csPerMin).map(d => makeEntry(d, d.csPerMin.toFixed(1))),
+    avgKills:   [...data].sort((a, b) => b.avgKills - a.avgKills).map(d => makeEntry(d, d.avgKills.toFixed(1))),
+    avgDeaths:  [...data].sort((a, b) => b.avgDeaths - a.avgDeaths).map(d => makeEntry(d, d.avgDeaths.toFixed(1))),
+    avgAssists: [...data].sort((a, b) => b.avgAssists - a.avgAssists).map(d => makeEntry(d, d.avgAssists.toFixed(1))),
+    avgPings:   [...data].sort((a, b) => b.avgPings - a.avgPings).map(d => makeEntry(d, Math.round(d.avgPings).toString())),
   }
 
   res.json(leaderboards)

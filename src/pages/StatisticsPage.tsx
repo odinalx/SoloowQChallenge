@@ -88,9 +88,9 @@ export default function StatisticsPage() {
         ) : null}
       </section>
 
-      {/* LE TOP — 4 columns */}
+      {/* LE TOP — totaux */}
       <section>
-        <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-lol-gold-light/40">Le Top</p>
+        <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-lol-gold-light/40">Le Top — Totaux</p>
         {loading ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -103,6 +103,27 @@ export default function StatisticsPage() {
             <StatLeaderboard title="Deaths" entries={leaderboards.deaths} version={version} />
             <StatLeaderboard title="Assists" entries={leaderboards.assists} version={version} />
             <StatLeaderboard title="CS / Min" entries={leaderboards.csPerMin} version={version} />
+          </div>
+        ) : (
+          <p className="text-sm text-lol-gold-light/40">Aucune donnée disponible.</p>
+        )}
+      </section>
+
+      {/* MOYENNES — par partie */}
+      <section>
+        <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-lol-gold-light/40">Moyennes / Partie</p>
+        {loading ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-48 w-full bg-lol-border/30 rounded" />
+            ))}
+          </div>
+        ) : leaderboards ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <StatLeaderboard title="Kills / Partie" entries={leaderboards.avgKills} version={version} />
+            <StatLeaderboard title="Décès / Partie" entries={leaderboards.avgDeaths} version={version} />
+            <StatLeaderboard title="Assists / Partie" entries={leaderboards.avgAssists} version={version} />
+            <StatLeaderboard title="Pings / Partie" entries={leaderboards.avgPings} version={version} />
           </div>
         ) : (
           <p className="text-sm text-lol-gold-light/40">Aucune donnée disponible.</p>

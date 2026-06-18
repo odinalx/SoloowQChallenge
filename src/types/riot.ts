@@ -111,4 +111,8 @@ export interface LeaderboardStats {
   deaths: LeaderboardEntry[]
   assists: LeaderboardEntry[]
   csPerMin: LeaderboardEntry[]
+  avgKills: LeaderboardEntry[]
+  avgDeaths: LeaderboardEntry[]
+  avgAssists: LeaderboardEntry[]
+  avgPings: LeaderboardEntry[]
 }
