@@ -18,7 +18,6 @@ export default function Layout() {
         >
           odinalx
         </a>
-        {' '}— Données fournies par Riot Games API
       </footer>
     </div>
   )
