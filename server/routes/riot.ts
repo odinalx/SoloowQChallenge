@@ -27,7 +27,7 @@ function buildFromDB(config: typeof PLAYERS[number]): TrackedPlayer | null {
   for (const id of allMatchIds) {
     if (recentMatches.length >= 10) break
     const m = getMatch(id)
-    if (m && m.info.gameDuration >= 210) recentMatches.push(m)
+    if (m && m.info.gameDuration >= 180) recentMatches.push(m)
   }
 
   return { config, account, summoner, soloEntry, recentMatches, isInGame: false }
