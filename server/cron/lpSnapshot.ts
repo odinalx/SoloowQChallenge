@@ -64,11 +64,11 @@ async function syncPlayer(player: typeof PLAYERS[number]): Promise<void> {
 
   const knownIds = new Set(getPlayerMatchIds(account.puuid, 420))
 
-  if (knownIds.size === 0 || knownIds.size % 100 === 0) {
-    // Cold start or last sync landed exactly on a page boundary — paginate forward.
-    // Remakes are stored but filtered at read-time (gameDuration < 210s), so we
-    // never cap by wins+losses here.
-    let start = knownIds.size === 0 ? 0 : knownIds.size
+  // Always paginate forward from what we have. If fully synced the API returns
+  // 0 results immediately (1 cheap call). This recovers any historical gap left
+  // by a previous run that capped fetching prematurely.
+  {
+    let start = knownIds.size
     let fetched = 0
     while (true) {
       await rl.wait()
