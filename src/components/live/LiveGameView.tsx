@@ -196,16 +196,11 @@ export function LiveGameView({ trackedPlayers, demo }: LiveGameViewProps) {
   if (!liveGame) return null
 
   const elapsed = useElapsed(liveGame.gameStartTime, liveGame.gameLength)
-  const trackedPuuids = new Set(trackedPlayers.map(tp => tp.account.puuid))
-
   const blueRaw = liveGame.participants.filter(p => p.teamId === 100)
   const redRaw = liveGame.participants.filter(p => p.teamId === 200)
 
-  // Sort by team slot (1=Top → 5=Support)
   const byRole = (a: LiveGameParticipant, b: LiveGameParticipant) =>
     (a.teamParticipantId ?? 99) - (b.teamParticipantId ?? 99)
-  const blueList = [...blueRaw].sort(byRole)
-  const redList = [...redRaw].sort(byRole)
 
   const blueTrackedMap = new Map(
     trackedPlayers
@@ -218,10 +213,19 @@ export function LiveGameView({ trackedPlayers, demo }: LiveGameViewProps) {
       .map(tp => [tp.account.puuid, tp])
   )
 
-  // Which column has no tracked player? That's the "enemy only" column.
-  // Push it to the bottom so enemies don't visually face the tracked player.
+  // Tracked players first (in role order), then others (in role order)
+  const sortTeam = (list: LiveGameParticipant[], trackedMap: Map<string, TrackedPlayer>) => {
+    const tracked = list.filter(p => trackedMap.has(p.puuid)).sort(byRole)
+    const others  = list.filter(p => !trackedMap.has(p.puuid)).sort(byRole)
+    return [...tracked, ...others]
+  }
+
+  const blueList = sortTeam(blueRaw, blueTrackedMap)
+  const redList  = sortTeam(redRaw, redTrackedMap)
+
   const singlePlayer = trackedPlayers.length === 1
-  const trackedIsBlue = singlePlayer && blueRaw.some(p => trackedPuuids.has(p.puuid))
+  const trackedIsBlue = singlePlayer && blueRaw.some(p => blueTrackedMap.has(p.puuid))
+  // Enemy column sticks to bottom so it aligns with the tracked player's row
   const blueJustify = singlePlayer && !trackedIsBlue ? 'justify-end' : 'justify-start'
   const redJustify  = singlePlayer && trackedIsBlue  ? 'justify-end' : 'justify-start'
 
@@ -320,7 +324,7 @@ export function LiveGameView({ trackedPlayers, demo }: LiveGameViewProps) {
       {/* ── Desktop layout: two columns ── */}
       <div className="hidden md:flex divide-x divide-lol-border/30">
 
-        {/* Blue column — enemy-only columns use justify-end (anchored to bottom) */}
+        {/* Blue column */}
         <div className={`flex-1 flex flex-col ${blueJustify}`}>
           {blueList.map((p, i) => {
             const tp = blueTrackedMap.get(p.puuid)
