@@ -41,7 +41,7 @@ function PlayerStatsPanel({ player, rank }: { player: TrackedPlayer; rank: numbe
   const version = useDDragonVersion()
   const { config, soloEntry, recentMatches, account, isInGame, liveGame } = player
 
-  const streak = recentMatches.slice(0, 9).map(m => {
+  const streak = recentMatches.slice(0, 10).map(m => {
     const p = m.info.participants.find(x => x.puuid === account.puuid)
     return p ? { win: p.win, champion: p.championName } : null
   }).filter(Boolean).reverse() as { win: boolean; champion: string }[]

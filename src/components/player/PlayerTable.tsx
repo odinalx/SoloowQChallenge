@@ -134,7 +134,7 @@ function PlayerMobileCard({ player, rank }: { player: TrackedPlayer; rank: numbe
   const isMaster = soloEntry ? ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(soloEntry.tier) : false
   const tierName = soloEntry ? (TIER_FR[soloEntry.tier] ?? soloEntry.tier) : null
 
-  const streak = recentMatches.slice(0, 9)
+  const streak = recentMatches.slice(0, 10)
     .map(m => {
       const p = m.info.participants.find(x => x.puuid === account.puuid)
       return p ? { win: p.win, champion: p.championName } : null
@@ -288,7 +288,7 @@ function PlayerRow({ player, rank }: { player: TrackedPlayer; rank: number }) {
   const wr = soloEntry ? winRate(soloEntry.wins, soloEntry.losses) : '—'
 
   // Most recent match = recentMatches[0] → should be on the RIGHT → reverse
-  const streak = recentMatches.slice(0, 9)
+  const streak = recentMatches.slice(0, 10)
     .map(m => {
       const p = m.info.participants.find(x => x.puuid === account.puuid)
       return p ? { win: p.win, champion: p.championName } : null

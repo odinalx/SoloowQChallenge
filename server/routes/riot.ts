@@ -25,7 +25,7 @@ function buildFromDB(config: typeof PLAYERS[number]): TrackedPlayer | null {
   const allMatchIds = getPlayerMatchIds(account.puuid, 420)
   const recentMatches: Match[] = []
   for (const id of allMatchIds) {
-    if (recentMatches.length >= 9) break
+    if (recentMatches.length >= 10) break
     const m = getMatch(id)
     if (m && m.info.gameDuration >= 210) recentMatches.push(m)
   }
