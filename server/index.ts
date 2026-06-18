@@ -49,7 +49,7 @@ app.get('/api/ddragon-version', (_req, res) => {
 
 // Serve React build in production
 if (process.env.NODE_ENV === 'production') {
-  const distPath = path.resolve(__dirname, '../dist')
+  const distPath = path.resolve(process.cwd(), 'dist')
   app.use(express.static(distPath))
   app.get('*', (_req, res) => {
     res.sendFile(path.join(distPath, 'index.html'))
