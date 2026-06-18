@@ -35,4 +35,5 @@ export const TTL = {
   LIVE_GAME: 30 * 1000,          // 30 sec
   MATCH: 24 * 60 * 60 * 1000,   // 24 hours
   MATCH_IDS: 5 * 60 * 1000,     // 5 min
+  CHAMPION_MAP: 24 * 60 * 60 * 1000, // 24 hours
 }

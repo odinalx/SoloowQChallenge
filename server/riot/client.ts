@@ -43,7 +43,7 @@ export const riotClient = {
     riotFetch<{
       gameId: number; gameQueueConfigId: number; gameMode: string; gameType: string;
       gameLength: number; gameStartTime: number;
-      participants: Array<{ puuid: string; championId: number; teamId: number; summonerName: string; riotId?: string }>
+      participants: Array<{ puuid: string; championId: number; teamId: number; teamParticipantId?: number; summonerName: string; riotId?: string }>
     }>(
       EUW1,
       `/lol/spectator/v5/active-games/by-summoner/${puuid}`

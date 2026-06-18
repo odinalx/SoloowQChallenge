@@ -33,6 +33,21 @@ function buildFromDB(config: typeof PLAYERS[number]): TrackedPlayer | null {
   return { config, account, summoner, soloEntry, recentMatches, isInGame: false }
 }
 
+// Build championId → DDragon name map, cached 24h
+async function getChampionIdMap(): Promise<Map<number, string>> {
+  const cacheKey = 'champion:idmap'
+  const cached = cache.get<Map<number, string>>(cacheKey)
+  if (cached) return cached
+  const version = await riotClient.getDDragonVersion()
+  const data = await riotClient.getChampionData(version)
+  const map = new Map<number, string>()
+  for (const champ of Object.values(data.data)) {
+    map.set(Number(champ.key), champ.id)
+  }
+  cache.set(cacheKey, map, TTL.CHAMPION_MAP)
+  return map
+}
+
 // Add real-time live game status (cached 30s, one API call per player)
 async function withLiveGame(player: TrackedPlayer): Promise<TrackedPlayer> {
   const liveKey = `live:${player.account.puuid}`
@@ -47,7 +62,14 @@ async function withLiveGame(player: TrackedPlayer): Promise<TrackedPlayer> {
       cache.set(liveKey, null, TTL.LIVE_GAME)
       return player
     }
-    const liveGame = game as LiveGame
+    const champMap = await getChampionIdMap()
+    const liveGame: LiveGame = {
+      ...game,
+      participants: game.participants.map(p => ({
+        ...p,
+        championName: champMap.get(p.championId),
+      })),
+    }
     cache.set(liveKey, liveGame, TTL.LIVE_GAME)
     return { ...player, isInGame: true, liveGame }
   } catch (e: unknown) {

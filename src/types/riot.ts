@@ -32,6 +32,7 @@ export interface LiveGameParticipant {
   championId: number
   championName?: string
   teamId: number
+  teamParticipantId?: number
   summonerName: string
   riotId?: string
 }

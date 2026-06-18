@@ -201,14 +201,11 @@ export function LiveGameView({ trackedPlayers, demo }: LiveGameViewProps) {
   const blueRaw = liveGame.participants.filter(p => p.teamId === 100)
   const redRaw = liveGame.participants.filter(p => p.teamId === 200)
 
-  // Tracked players float to the top; remaining keep their API order (= role order)
-  const sortTrackedFirst = (list: LiveGameParticipant[]) => [
-    ...list.filter(p => trackedPuuids.has(p.puuid)),
-    ...list.filter(p => !trackedPuuids.has(p.puuid)),
-  ]
-
-  const blueList = sortTrackedFirst(blueRaw)
-  const redList = sortTrackedFirst(redRaw)
+  // Sort by team slot (1=Top → 5=Support)
+  const byRole = (a: LiveGameParticipant, b: LiveGameParticipant) =>
+    (a.teamParticipantId ?? 99) - (b.teamParticipantId ?? 99)
+  const blueList = [...blueRaw].sort(byRole)
+  const redList = [...redRaw].sort(byRole)
 
   const blueTrackedMap = new Map(
     trackedPlayers
@@ -299,25 +296,23 @@ export function LiveGameView({ trackedPlayers, demo }: LiveGameViewProps) {
       <div className="md:hidden divide-y divide-lol-border/30">
         {/* Blue section */}
         <div className="pt-2 pb-1">
-          {blueRaw.filter(p => trackedPuuids.has(p.puuid)).map(p => {
-            const tp = blueTrackedMap.get(p.puuid)!
-            return <MobileTrackedCard key={p.puuid} tp={tp} p={p} />
+          {blueList.map(p => {
+            const tp = blueTrackedMap.get(p.puuid)
+            return tp
+              ? <MobileTrackedCard key={p.puuid} tp={tp} p={p} />
+              : <MobilePlayerRow key={p.puuid} p={p} />
           })}
-          {blueRaw.filter(p => !trackedPuuids.has(p.puuid)).map((p, i) => (
-            <MobilePlayerRow key={i} p={p} />
-          ))}
           <p className="px-4 pt-2 pb-1 text-[11px] font-bold uppercase tracking-widest text-[#0397ab]">Blue Side</p>
         </div>
 
         {/* Red section */}
         <div className="pt-2 pb-1">
-          {redRaw.filter(p => trackedPuuids.has(p.puuid)).map(p => {
-            const tp = redTrackedMap.get(p.puuid)!
-            return <MobileTrackedCard key={p.puuid} tp={tp} p={p} />
+          {redList.map(p => {
+            const tp = redTrackedMap.get(p.puuid)
+            return tp
+              ? <MobileTrackedCard key={p.puuid} tp={tp} p={p} />
+              : <MobilePlayerRow key={p.puuid} p={p} />
           })}
-          {redRaw.filter(p => !trackedPuuids.has(p.puuid)).map((p, i) => (
-            <MobilePlayerRow key={i} p={p} />
-          ))}
           <p className="px-4 pt-2 pb-1 text-[11px] font-bold uppercase tracking-widest text-[#ef4444]">Red Side</p>
         </div>
       </div>
