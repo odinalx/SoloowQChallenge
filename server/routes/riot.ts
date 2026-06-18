@@ -51,9 +51,9 @@ async function withLiveGame(player: TrackedPlayer): Promise<TrackedPlayer> {
     cache.set(liveKey, liveGame, TTL.LIVE_GAME)
     return { ...player, isInGame: true, liveGame }
   } catch (e: unknown) {
-    if (e && typeof e === 'object' && 'status' in e && (e as { status: number }).status === 404) {
-      cache.set(liveKey, null, TTL.LIVE_GAME)
-    }
+    // Cache all errors: 404 = confirmed not in game (full TTL), others = short TTL to avoid burning rate limit during outages
+    const is404 = e && typeof e === 'object' && 'status' in e && (e as { status: number }).status === 404
+    cache.set(liveKey, null, is404 ? TTL.LIVE_GAME : 15_000)
     return player
   }
 }

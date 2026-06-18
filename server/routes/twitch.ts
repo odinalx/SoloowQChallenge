@@ -28,7 +28,7 @@ twitchRouter.get('/channel', (_req, res) => {
 })
 
 twitchRouter.get('/status/:login', async (req, res) => {
-  const { login } = req.params
+  const login = encodeURIComponent(req.params.login)
   const key = `twitch:live:${login}`
   if (cache.has(key)) return res.json({ isLive: cache.get<boolean>(key) ?? false })
 
@@ -53,7 +53,7 @@ twitchRouter.get('/status/:login', async (req, res) => {
 })
 
 twitchRouter.get('/pfp/:login', async (req, res) => {
-  const { login } = req.params
+  const login = encodeURIComponent(req.params.login)
   const key = `twitch:pfp:${login}`
   if (cache.has(key)) return res.json({ url: cache.get<string | null>(key) })
 

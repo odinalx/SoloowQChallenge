@@ -15,8 +15,21 @@ const app = express()
 const PORT = Number(process.env.PORT ?? 3001)
 
 // Security & parsing
-app.use(helmet({ contentSecurityPolicy: false }))
-app.use(cors({ origin: 'http://localhost:5173' }))
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      frameSrc: ["'self'", "https://player.twitch.tv"],
+      fontSrc: ["'self'", "data:"],
+      objectSrc: ["'none'"],
+    }
+  }
+}))
+app.use(cors({ origin: process.env.NODE_ENV === 'production' ? false : 'http://localhost:5173' }))
 app.use(express.json())
 
 // API routes

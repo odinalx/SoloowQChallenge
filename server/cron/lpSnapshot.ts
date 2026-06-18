@@ -177,9 +177,12 @@ async function readHistory(): Promise<LPSnapshot[]> {
   }
 }
 
+const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000
+
 export async function takeLPSnapshot(): Promise<void> {
   const history = await readHistory()
   const timestamp = new Date().toISOString()
+  const cutoff = new Date(Date.now() - ONE_YEAR_MS).toISOString()
   let changed = false
 
   for (const player of PLAYERS) {
@@ -202,7 +205,9 @@ export async function takeLPSnapshot(): Promise<void> {
   }
 
   if (changed) {
-    await fs.writeFile(LP_FILE, JSON.stringify(history, null, 2))
+    // Trim entries older than 1 year before persisting
+    const trimmed = history.filter(e => e.timestamp >= cutoff)
+    await fs.writeFile(LP_FILE, JSON.stringify(trimmed, null, 2))
     console.log(`[LP] Snapshot — ${new Date(timestamp).toLocaleString('fr-FR')}`)
   }
 }
