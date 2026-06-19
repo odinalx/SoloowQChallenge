@@ -44,7 +44,7 @@ twitchRouter.get('/status/:login', async (req, res) => {
     })
     const d = await r.json() as { data: unknown[] }
     const isLive = d.data.length > 0
-    cache.set(key, isLive, 60_000)
+    cache.set(key, isLive, 30_000)
     res.json({ isLive })
   } catch {
     cache.set(key, false, 30_000)
